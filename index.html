@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>重量单位大闯关 · 三年级数学</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 20px 14px 40px;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(165deg, #ffe8d9 0%, #f2f8ff 45%, #e6f7ee 100%);
+    color: #22384f;
+    display: flex;
+    justify-content: center;
+  }
+
+  .game {
+    width: 100%;
+    max-width: 820px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  h1 {
+    margin: 4px 0 0;
+    font-size: clamp(22px, 5vw, 32px);
+    text-align: center;
+    color: #1f4e79;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    margin: 0;
+    text-align: center;
+    font-size: 15px;
+    color: #6b8bab;
+  }
+
+  /* ---------- 顶部统计 ---------- */
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    font-size: 15px;
+    color: #3d6185;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(80, 130, 180, 0.12);
+  }
+
+  .stats b { color: #e8590c; font-size: 18px; }
+
+  /* ---------- 题目卡片 ---------- */
+  .card {
+    min-height: 230px;
+    padding: 34px 28px 28px;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 12px 34px rgba(70, 120, 170, 0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+  }
+
+  .question {
+    font-size: clamp(20px, 3.4vw, 28px);
+    font-weight: 600;
+    line-height: 1.9;
+    text-align: center;
+    color: #1f3a54;
+  }
+
+  /* ---------- 填空槽 ---------- */
+  .blank {
+    display: inline-block;
+    min-width: 118px;
+    margin: 0 8px;
+    padding: 2px 16px;
+    border: 3px dashed #8fb8e0;
+    border-radius: 14px;
+    background: #f5faff;
+    color: #a8c2da;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .blank.empty { font-size: 16px; font-weight: 500; }
+  .blank.over  { border-color: #f59f00; background: #fff9e6; transform: scale(1.05); }
+  .blank.filled { font-size: inherit; color: #1f3a54; }
+
+  .blank.correct {
+    border: 3px solid #40c057;
+    background: #ebfbee;
+    color: #2b8a3e;
+    animation: pop 0.35s ease;
+  }
+
+  .blank.wrong {
+    border: 3px solid #fa5252;
+    background: #fff5f5;
+    color: #e03131;
+    animation: shake 0.4s ease;
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(0.9); }
+    60%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%      { transform: translateX(-8px); }
+    40%      { transform: translateX(8px); }
+    60%      { transform: translateX(-5px); }
+    80%      { transform: translateX(5px); }
+  }
+
+  /* ---------- 反馈 ---------- */
+  .feedback {
+    min-height: 28px;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .feedback.ok { color: #2b8a3e; }
+  .feedback.no { color: #e03131; }
+
+  /* ---------- 按钮 ---------- */
+  .next-btn {
+    padding: 12px 36px;
+    border: none;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #ff922b, #e8590c);
+    box-shadow: 0 6px 16px rgba(232, 89, 12, 0.35);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .next-btn:hover  { transform: translateY(-2px); box-shadow: 0 9px 20px rgba(232, 89, 12, 0.42); }
+  .next-btn:active { transform: translateY(0) scale(0.97); }
+
+  /* ---------- 单位选择区（固定，不刷新） ---------- */
+  .unit-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    padding: 20px 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(70, 120, 170, 0.14);
+  }
+
+  .unit-chip {
+    padding: 12px 30px;
+    border-radius: 16px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #fff;
+    cursor: grab;
+    user-select: none;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18), 0 6px 14px rgba(0, 0, 0, 0.12);
+    transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+  }
+
+  .unit-chip:hover  { transform: translateY(-3px); }
+  .unit-chip:active { cursor: grabbing; transform: translateY(2px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18); }
+  .unit-chip.dragging { opacity: 0.45; transform: scale(0.95); }
+
+  .hint {
+    margin: 0;
+    text-align: center;
+    font-size: 14px;
+    color: #8aa6c1;
+  }
+
+  /* ---------- 通关画面 ---------- */
+  .finish { text-align: center; }
+  .finish-emoji { font-size: 56px; line-height: 1; margin-bottom: 10px; }
+  .finish-title { font-size: 22px; font-weight: 800; color: #1f4e79; margin-bottom: 8px; }
+  .finish-sub   { font-size: 17px; color: #4a6f92; }
+  .finish-sub b { font-size: 22px; color: #e8590c; }
+
+  @media (max-width: 560px) {
+    .card { padding: 24px 14px 20px; min-height: 200px; }
+    .unit-chip { padding: 10px 22px; font-size: 17px; }
+    .stats { font-size: 13px; }
+    .blank { min-width: 90px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="game">
+  <h1>⚖️ 重量单位大闯关</h1>
+  <p class="subtitle">把合适的重量单位拖到空格里吧！</p>
+
+  <div class="stats">
+    <span>第 <b id="qIndex">1</b> / <b id="qTotal">27</b> 题</span>
+    <span>一次答对 <b id="perfect">0</b> 题</span>
+  </div>
+
+  <div class="card">
+    <div class="question" id="question"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" hidden>继续挑战 ▶</button>
+  </div>
+
+  <div class="unit-bar" id="unitBar"></div>
+  <p class="hint">提示：可以拖动下面的单位，也可以直接点击单位</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ======================= 数据区 ======================= */
+
+  // 三种重量单位
+  const UNITS = ['吨', '千克', '克'];
+
+  // 每种单位每轮出题数量（不少于 9 题）
+  const PER_UNIT = 9;
+
+  // 每个单位备选题库（均多于 9 题，随机抽取，保证每轮题目新鲜）
+  const BANK = {
+    '吨': [
+      '一头大象重约 4 ____。',
+      '一辆卡车的载重量约 20 ____。',
+      '一艘轮船的载重量约 5000 ____。',
+      '一辆小汽车重约 2 ____。',
+      '一头鲸鱼重约 30 ____。',
+      '一列火车车厢的载重量约 60 ____。',
+      '一堆沙子重约 10 ____。',
+      '一座桥的限重是 30 ____。',
+      '一车水泥重约 15 ____。',
+      '大型吊车能吊起 100 ____ 的重物。',
+      '一辆重型卡车重约 10 ____。',
+      '粮库运来一车粮食重约 8 ____。',
+      '一艘货轮一次能装 8000 ____ 的货物。',
+      '一节油罐车能装 50 ____ 的汽油。'
+    ],
+    '千克': [
+      '一袋大米重 25 ____。',
+      '爸爸的体重约 70 ____。',
+      '一箱牛奶重约 5 ____。',
+      '一只鸡重约 2 ____。',
+      '一桶食用油重约 5 ____。',
+      '一袋面粉重 10 ____。',
+      '一头猪重约 100 ____。',
+      '一个西瓜重约 5 ____。',
+      '一台洗衣机重约 30 ____。',
+      '一个大书包重约 4 ____。',
+      '妈妈的体重约 55 ____。',
+      '一箱苹果重约 10 ____。',
+      '一只成年羊重约 50 ____。',
+      '一名三年级小学生重约 30 ____。',
+      '一只小狗重约 8 ____。'
+    ],
+    '克': [
+      '一枚鸡蛋重约 50 ____。',
+      '一粒花生米重约 1 ____。',
+      '一块橡皮重约 10 ____。',
+      '一支铅笔重约 5 ____。',
+      '一枚一元硬币重约 6 ____。',
+      '一个苹果重约 200 ____。',
+      '一瓶矿泉水重约 500 ____。',
+      '一颗糖重约 5 ____。',
+      '一枚回形针重约 1 ____。',
+      '一个乒乓球重约 3 ____。',
+      '一块巧克力重约 100 ____。',
+      '一袋牛奶重约 250 ____。',
+      '一本书重约 300 ____。',
+      '一片面包重约 30 ____。',
+      '一块饼干重约 10 ____。'
+    ]
+  };
+
+  // 每个单位的配色
+  const COLORS = {
+    '吨':   'linear-gradient(160deg,#ff8787,#f03e3e)',
+    '千克': 'linear-gradient(160deg,#ffc078,#f08c00)',
+    '克':   'linear-gradient(160deg,#74c0fc,#1c7ed6)'
+  };
+
+  /* ======================= 工具函数 ======================= */
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // 生成一轮题目：每种单位 PER_UNIT 题，最后整体打乱
+  function buildRound() {
+    const list = [];
+    UNITS.forEach(function (unit) {
+      const pool = shuffle(BANK[unit]);
+      for (let i = 0; i < PER_UNIT; i++) {
+        list.push({ text: pool[i % pool.length], answer: unit });
+      }
+    });
+    return shuffle(list);
+  }
+
+  /* ======================= DOM ======================= */
+
+  const questionEl = document.getElementById('question');
+  const feedbackEl = document.getElementById('feedback');
+  const nextBtn    = document.getElementById('nextBtn');
+  const unitBar    = document.getElementById('unitBar');
+  const qIndexEl   = document.getElementById('qIndex');
+  const qTotalEl   = document.getElementById('qTotal');
+  const perfectEl  = document.getElementById('perfect');
+
+  /* ======================= 状态 ======================= */
+
+  let round = [];          // 本轮题目
+  let current = 0;         // 当前题目下标
+  let perfect = 0;         // 一次答对的题数
+  let locked = false;      // 当前题是否已答对
+  let wrongThis = false;   // 当前题是否答错过
+  let resetTimer = null;   // 答错后重置空格的定时器
+  let phase = 'play';      // play | done
+
+  /* ======================= 单位选择区（只创建一次，永不刷新） ======================= */
+
+  function createUnitBar() {
+    UNITS.forEach(function (unit) {
+      const chip = document.createElement('div');
+      chip.className = 'unit-chip';
+      chip.textContent = unit;
+      chip.draggable = true;
+      chip.dataset.unit = unit;
+      chip.style.background = COLORS[unit];
+
+      // —— 拖拽开始 ——
+      chip.addEventListener('dragstart', function (e) {
+        e.dataTransfer.setData('text/plain', unit);
+        e.dataTransfer.effectAllowed = 'copy';
+        chip.classList.add('dragging');
+      });
+
+      chip.addEventListener('dragend', function () {
+        chip.classList.remove('dragging');
+      });
+
+      // —— 点击直接填空 ——
+      chip.addEventListener('click', function () {
+        if (locked) return;
+        placeUnit(unit);
+      });
+
+      unitBar.appendChild(chip);
+    });
+  }
+
+  /* ======================= 渲染题目 ======================= */
+
+  function renderQuestion() {
+    const q = round[current];
+    const pos = q.text.indexOf('____');
+    const before = q.text.slice(0, pos);
+    const after  = q.text.slice(pos + 4);
+
+    questionEl.innerHTML =
+      '<span>' + before + '</span>' +
+      '<span class="blank empty" id="blank">？</span>' +
+      '<span>' + after + '</span>';
+
+    qIndexEl.textContent  = current + 1;
+    qTotalEl.textContent  = round.length;
+    perfectEl.textContent = perfect;
+  }
+
+  /* ======================= 判题 ======================= */
+
+  function placeUnit(unit) {
+    if (locked) return;
+
+    const blank = document.getElementById('blank');
+    if (!blank) return;
+
+    clearTimeout(resetTimer);
+
+    blank.textContent = unit;
+    blank.className = 'blank filled';
+
+    const q = round[current];
+
+    if (unit === q.answer) {
+      /* ---------- 回答正确 ---------- */
+      locked = true;
+      blank.classList.add('correct');
+
+      if (!wrongThis) perfect++;
+      perfectEl.textContent = perfect;
+
+      feedbackEl.textContent = '你真棒！继续挑战吧！';
+      feedbackEl.className = 'feedback ok';
+
+      nextBtn.hidden = false;
+    } else {
+      /* ---------- 回答错误 ---------- */
+      wrongThis = true;
+      blank.classList.add('wrong');
+
+      feedbackEl.textContent = '回答错误，再仔细想想吧。';
+      feedbackEl.className = 'feedback no';
+
+      // 1.2 秒后清空空格，让小朋友重新选择
+      resetTimer = setTimeout(function () {
+        const b = document.getElementById('blank');
+        if (b && !locked) {
+          b.textContent = '？';
+          b.className = 'blank empty';
+        }
+      }, 1200);
+    }
+  }
+
+  /* ======================= 拖放事件（委托在题目区） ======================= */
+
+  questionEl.addEventListener('dragover', function (e) {
+    const blank = e.target.closest && e.target.closest('.blank');
+    if (blank && !locked) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      blank.classList.add('over');
+    }
+  });
+
+  questionEl.addEventListener('dragleave', function (e) {
+    const blank = e.target.closest && e.target.closest('.blank');
+    if (blank) blank.classList.remove('over');
+  });
+
+  questionEl.addEventListener('drop', function (e) {
+    const blank = e.target.closest && e.target.closest('.blank');
+    if (!blank) return;
+    e.preventDefault();
+    blank.classList.remove('over');
+
+    const unit = e.dataTransfer.getData('text/plain');
+    if (unit) placeUnit(unit);
+  });
+
+  /* ======================= 下一题 / 重新开始 ======================= */
+
+  nextBtn.addEventListener('click', function () {
+    if (phase === 'done') {
+      startGame();
+      return;
+    }
+
+    current++;
+
+    if (current >= round.length) {
+      finish();
+      return;
+    }
+
+    // 刷新题目（单位选择区保持原样，不重新创建）
+    locked = false;
+    wrongThis = false;
+    clearTimeout(resetTimer);
+
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'feedback';
+    nextBtn.hidden = true;
+
+    renderQuestion();
+  });
+
+  /* ======================= 通关画面 ======================= */
+
+  function finish() {
+    phase = 'done';
+    clearTimeout(resetTimer);
+
+    questionEl.innerHTML =
+      '<div class="finish">' +
+        '<div class="finish-emoji">🎉</div>' +
+        '<div class="finish-title">太厉害了！' + round.length + ' 道题全部完成！</div>' +
+        '<div class="finish-sub">一次就答对的有 <b>' + perfect + '</b> 道题</div>' +
+      '</div>';
+
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'feedback';
+
+    nextBtn.hidden = false;
+    nextBtn.textContent = '再来一轮 ↻';
+  }
+
+  /* ======================= 开始 / 重开 ======================= */
+
+  function startGame() {
+    round = buildRound();
+    current = 0;
+    perfect = 0;
+    locked = false;
+    wrongThis = false;
+    phase = 'play';
+
+    clearTimeout(resetTimer);
+
+    nextBtn.hidden = true;
+    nextBtn.textContent = '继续挑战 ▶';
+
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'feedback';
+
+    renderQuestion();
+  }
+
+  /* ======================= 启动 ======================= */
+
+  createUnitBar();   // 单位选择区只创建一次
+  startGame();
+
+})();
+</script>
+</body>
+</html>
